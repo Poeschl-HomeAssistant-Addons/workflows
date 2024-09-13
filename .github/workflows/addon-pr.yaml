@@ -108,7 +108,7 @@ jobs:
       - name: 🚀 Check if versions of CHANGELOG.md and config match
         shell: bash
         run: |
-          config_version=${{ needs..information.outputs.version }}
+          config_version=${{ needs.information.outputs.version }}
           changelog_version=$(sed -nr "0,/#{1,2}\s+(\S+)\s+-.*/{s//\1/p}" "${{ matrix.addon }}/CHANGELOG.md")
           if [[ ! "$config_version" = "$changelog_version" ]]; then
               echo "::error title=Version mismatch::The config version does not match the latest Changelog version!"
@@ -123,6 +123,7 @@ jobs:
     strategy:
       matrix:
         architecture: ${{ fromJson(needs.information.outputs.architectures) }}
+      fail-fast: false
     steps:
       - name: ↩️ Checkout
         uses: actions/checkout@v4
