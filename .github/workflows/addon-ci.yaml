@@ -109,7 +109,7 @@ jobs:
         shell: bash
         run: |
           config_version=${{ needs.information.outputs.version }}
-          changelog_version=$(sed -nr "0,/#{1,2}\s+(\S+)\s+-.*/{s//\1/p}" "${{ matrix.addon }}/CHANGELOG.md")
+          changelog_version=$(sed -nr "0,/#{1,2}\s+(\S+)\s+-.*/{s//\1/p}" "./${{ needs.information.outputs.target }}CHANGELOG.md")
           if [[ ! "$config_version" = "$changelog_version" ]]; then
               echo "::error title=Version mismatch::The config version does not match the latest Changelog version!"
               exit 1
