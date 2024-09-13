@@ -1,0 +1,194 @@
+name: Check addon with linters
+on:
+  workflow_call:
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  information:
+    name: ℹ️ Setup addon environment information
+    runs-on: ubuntu-latest
+    outputs:
+      name: ${{ steps.information.outputs.name }}
+      description: ${{ steps.information.outputs.description }}
+      slug: ${{ steps.information.outputs.slug }}
+      addon-folder: ${{ steps.information.outputs.target }}
+      version: ${{ steps.information.outputs.version }}
+      architectures: ${{ steps.information.outputs.architectures }}
+      build-file: ${{ steps.information.outputs.build }}
+      config-file: ${{ steps.information.outputs.config }}
+    steps:      
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: ℹ️ Gather addon info
+        id: information
+        uses: frenck/action-addon-information@v1
+        with:
+          path: "."
+
+  lint-addon:
+    name: 🔎 Home Assistant Addon Linter
+    runs-on: ubuntu-latest
+    needs:
+      - information
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🚀 Run Home Assistant Add-on Lint
+        uses: frenck/action-addon-linter@v2
+        with:
+          # Enable, if the release process of HA is used
+          # community: true
+          path: "./${{ needs.information.outputs.target }}"
+
+  lint-hadolint:
+    name: 🔎 Hadolint
+    runs-on: ubuntu-latest
+    needs:
+      - information
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🚀 Run hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: "./${{ needs.information.outputs.target }}/Dockerfile"
+
+  lint-shellcheck:
+    name: 🔎 ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🚀 Run ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        env:
+          SHELLCHECK_OPTS: -s bash
+
+  lint-markdown:
+    name: 🔎 MarkdownLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🚀 Run markdownlint
+        uses: nosborn/github-action-markdown-cli@v3.3.0
+        with:
+          files: .
+
+  lint-yaml:
+    name: 🔎 YamlLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🚀 Run yamllint
+        uses: ibiqlik/action-yamllint@v3
+
+  verify-matching-version:
+    name: ✔️ Verify matching addon version
+    runs-on: ubuntu-latest
+    needs:
+      - information
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🚀 Check if versions of CHANGELOG.md and config match
+        shell: bash
+        run: |
+          config_version=${{ needs..information.outputs.version }}
+          changelog_version=$(sed -nr "0,/#{1,2}\s+(\S+)\s+-.*/{s//\1/p}" "${{ matrix.addon }}/CHANGELOG.md")
+          if [[ ! "$config_version" = "$changelog_version" ]]; then
+              echo "::error title=Version mismatch::The config version does not match the latest Changelog version!"
+              exit 1
+          fi    
+
+  test-image-build:
+    name: ✔️ Verify image build ${{ matrix.architecture }}
+    runs-on: ubuntu-latest
+    needs:
+      - information
+    strategy:
+      matrix:
+        architecture: ${{ fromJson(needs.information.outputs.architectures) }}
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: ℹ️ Generate addon meta info
+        id: addon-meta
+        shell: bash
+        run: |
+          from=$(yq --no-colors eval ".build_from.${{ matrix.architecture }}" "${{ needs.information.outputs.build-file }}")
+          echo "Base image: ${from}"
+          echo "from=${from}" >> "$GITHUB_OUTPUT"
+
+          if [[ "${{ matrix.architecture}}" = "amd64" ]]; then
+            echo "platform=linux/amd64" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ matrix.architecture }}" = "i386" ]]; then
+            echo "platform=linux/386" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ matrix.architecture }}" = "armhf" ]]; then
+            echo "platform=linux/arm/v6" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ matrix.architecture }}" = "armv7" ]]; then
+            echo "platform=linux/arm/v7" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ matrix.architecture }}" = "aarch64" ]]; then
+            echo "platform=linux/arm64/v8" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error ::Could not determine platform for architecture ${{ matrix.architecture }}"
+            exit 1
+          fi
+
+          labels="io.hass.version=${{ steps.information.outputs.version }}"
+          labels=$(printf "$labels\nio.hass.name=${{ steps.information.outputs.name }}")
+          labels=$(printf "$labels\nio.hass.description=${{ steps.information.outputs.description }}")
+          labels=$(printf "$labels\nio.hass.type=addon")
+          labels=$(printf "$labels\nio.hass.url=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}")
+          labels=$(printf "$labels\nio.hass.arch=${{ matrix.architecture }}")
+
+          # allow multiline outputs, see https://github.community/t/set-output-truncates-multiline-strings/16852
+          labels="${labels//$'\n'/'%0A'}"
+
+          echo "Addon labels: $labels"
+          echo "labels=${labels}" >> "$GITHUB_OUTPUT"
+
+      - name: ℹ️ Generate OCI meta info
+        id: image-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ needs.information.outputs.name }}
+          tags: "dev"
+
+      - name: 🏗️ Install qemu dependency
+        run: sudo podman run --rm --privileged docker.io/tonistiigi/binfmt --install all
+
+      - name: 🏗️ Pull base image
+        run: sudo podman pull ${{ steps.addon-meta.outputs.from }}
+
+      - name: 🚀 Verify image build
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          containerfiles: "./${{ needs.information.outputs.target }}/Dockerfile"
+          context: "./${{ needs.information.outputs.target }}"
+          tags: ${{ steps.image-meta.outputs.tags }}
+          labels: ${{ steps.image-meta.outputs.labels }}
+          platforms: ${{ steps.addon-meta.outputs.platform }}
+          build-args: |
+            BUILD_NAME=${{ needs.information.outputs.name }}
+            BUILD_DESCRIPTION=${{ needs.information.outputs.description }}
+            BUILD_FROM=${{ steps.addon-meta.outputs.from }}
+            BUILD_ARCH=${{ matrix.architecture }}
+            BUILD_VERSION=${{ needs.information.outputs.version }}
+          # Disable layer caching
+          layers: false

@@ -1,0 +1,33 @@
+name: Verify workflows
+
+on:
+  push:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+  
+jobs:
+  lint-markdown:
+    name: 🔎 MarkdownLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🚀 Run markdownlint
+        uses: nosborn/github-action-markdown-cli@v3.3.0
+        with:
+          files: .
+
+  lint-yaml:
+    name: 🔎 YamlLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🚀 Run yamllint
+        uses: ibiqlik/action-yamllint@v3
