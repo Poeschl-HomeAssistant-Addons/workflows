@@ -4,7 +4,6 @@ name: Check addon with linters
 on:
   workflow_call:
 
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -23,7 +22,7 @@ jobs:
       architectures: ${{ steps.information.outputs.architectures }}
       build-file: ${{ steps.information.outputs.build }}
       config-file: ${{ steps.information.outputs.config }}
-    steps:      
+    steps:
       - name: ↩️ Checkout
         uses: actions/checkout@v4
 
@@ -114,7 +113,7 @@ jobs:
           if [[ ! "$config_version" = "$changelog_version" ]]; then
               echo "::error title=Version mismatch::The config version does not match the latest Changelog version!"
               exit 1
-          fi    
+          fi
 
   test-image-build:
     name: ✔️ Verify image build ${{ matrix.architecture }}

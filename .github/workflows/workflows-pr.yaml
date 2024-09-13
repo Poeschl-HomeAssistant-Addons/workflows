@@ -9,7 +9,7 @@ on:
       - reopened
       - synchronize
   workflow_dispatch:
-  
+
 jobs:
   lint-markdown:
     name: 🔎 MarkdownLint
