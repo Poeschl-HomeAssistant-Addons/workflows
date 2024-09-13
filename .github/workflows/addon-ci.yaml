@@ -175,7 +175,7 @@ jobs:
         run: sudo podman run --rm --privileged docker.io/tonistiigi/binfmt --install all
 
       - name: 🏗️ Pull base image
-        run: sudo podman pull ${{ steps.addon-meta.outputs.from }}
+        run: podman pull ${{ steps.addon-meta.outputs.from }}
 
       - name: 🚀 Verify image build
         id: build-image
