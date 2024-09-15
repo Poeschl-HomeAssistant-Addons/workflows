@@ -206,5 +206,5 @@ jobs:
         uses: MaxymVlasov/dive-action@v1.0.1
         with:
           image: "${{ steps.build-image.outputs.image-with-tag }}"
-          config-file: ${{ github.workspace }}/.dive-ci.yml
+          config-file: ${{ github.workspace }}/.dive-ci.yaml
           github-token: ${{ secrets.GITHUB_TOKEN }}
