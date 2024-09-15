@@ -1,0 +1,30 @@
+name: PR labels
+
+# yamllint disable-line rule:truthy
+on:
+  pull_request_target:
+    types:
+      - opened
+      - labeled
+      - unlabeled
+      - synchronize
+  workflow_call:
+
+jobs:
+  pr_labels:
+    name: ✔️ Verify label
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: 🏷️ Enforce category label
+        uses: jesusvasquez333/verify-pr-label-action@v1.4.0
+        with:
+          pull-request-number: "${{ github.event.pull_request.number }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          valid-labels: >-
+            breaking-change, bugfix, documentation, enhancement, refactor,
+            new-feature, maintenance, dependencies
+          # Let the job create a review on the PR
+          disable-reviews: false

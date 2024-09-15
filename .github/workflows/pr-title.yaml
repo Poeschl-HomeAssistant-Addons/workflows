@@ -1,0 +1,21 @@
+name: PR title
+
+# yamllint disable-line rule:truthy
+on:
+  pull_request:
+    types:
+      - edited
+  workflow_call:
+
+jobs:
+  gitmoji-pr-title:
+    name: ✔️ Verify title
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: 🏷️ Enforce gitmoji PR title
+        uses: georgepstaylor/gitmoji-pr-title-enforcer@v0.0.1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
