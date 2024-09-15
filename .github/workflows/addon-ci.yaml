@@ -183,6 +183,7 @@ jobs:
         with:
           containerfiles: "./${{ needs.information.outputs.target }}/Dockerfile"
           context: "./${{ needs.information.outputs.target }}"
+          images: ${{ steps.image-meta.outputs.images }}
           tags: ${{ steps.image-meta.outputs.tags }}
           labels: ${{ steps.image-meta.outputs.labels }}
           platforms: ${{ steps.addon-meta.outputs.platform }}
@@ -197,11 +198,11 @@ jobs:
 
       # Required for dive action, since it has the schema hardcoded
       - name: 🚚 Push image to docker daemon
-        run: podman push ${{ needs.information.outputs.name }}:dev-${{ matrix.architecture }} docker-daemon:${{ needs.information.outputs.name }}:dev-${{ matrix.architecture }}
+        run: podman push ${{ steps.build-image.outputs.image-with-tag }} docker-daemon:${{ steps.build-image.outputs.image-with-tag }}
 
       - name: 🚀 Execute dive
         uses: MaxymVlasov/dive-action@v1.0.1
         with:
-          image: "${{ needs.information.outputs.name }}:dev-${{ matrix.architecture }}"
+          image: "${{ steps.build-image.outputs.image-with-tag }}"
           config-file: ${{ github.workspace }}/.dive-ci.yml
           github-token: ${{ secrets.GITHUB_TOKEN }}
