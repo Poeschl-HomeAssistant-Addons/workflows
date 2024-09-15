@@ -169,7 +169,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ needs.information.outputs.name }}
-          tags: "dev"
+          tags: "dev-${{ matrix.architecture }}"
 
       - name: 🏗️ Install qemu dependency
         run: sudo podman run --rm --privileged docker.io/tonistiigi/binfmt --install all
@@ -177,7 +177,7 @@ jobs:
       - name: 🏗️ Pull base image
         run: podman pull ${{ steps.addon-meta.outputs.from }}
 
-      - name: 🚀 Verify image build
+      - name: 🚀 Execute image build
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
@@ -194,3 +194,14 @@ jobs:
             BUILD_VERSION=${{ needs.information.outputs.version }}
           # Disable layer caching
           layers: false
+
+      # Required for dive action, since it has the schema hardcoded
+      - name: 🚚 Push image to docker daemon
+        run: podman push ${{ needs.information.outputs.name }}:dev-${{ matrix.architecture }} docker-daemon:${{ needs.information.outputs.name }}:dev-${{ matrix.architecture }}
+
+      - name: 🚀 Execute dive
+        uses: MaxymVlasov/dive-action@v1.0.1
+        with:
+          image: "${{ needs.information.outputs.name }}:dev-${{ matrix.architecture }}"
+          config-file: ${{ github.workspace }}/.dive-ci.yml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
