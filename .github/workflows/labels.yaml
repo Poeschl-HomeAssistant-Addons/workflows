@@ -1,0 +1,30 @@
+name: Sync repo labels
+
+# yamllint disable-line rule:truthy
+on:
+  schedule:
+    - cron: "0 0 * * SUN"
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/labels.yaml
+
+jobs:
+  labels:
+    name: ♻️ Sync labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Download latest labels definitions
+        uses: enflo/curl-action@v1
+        with:
+          curl: -o labels.yaml https://raw.githubusercontent.com/Poeschl-HomeAssistant-Addons/workflows/main/.github/labels.yaml
+
+      - name: 🚀 Run Label Sync
+        uses: micnncim/action-label-syncer@v1.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          manifest: labels.yaml
