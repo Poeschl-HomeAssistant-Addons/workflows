@@ -10,6 +10,12 @@ on:
       - synchronize
   workflow_call:
 
+concurrency:
+  group: queue
+  cancel-in-progress: true
+
+permissions: read-all
+
 jobs:
   pr_labels:
     name: ✔️ Verify label

@@ -10,6 +10,8 @@ on:
 concurrency:
   group: queue
 
+permissions: read-all
+
 jobs:
   information:
     if: github.event_name == 'release'

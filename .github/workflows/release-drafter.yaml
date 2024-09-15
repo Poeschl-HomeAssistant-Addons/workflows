@@ -4,6 +4,12 @@ name: Release Drafter
 on:
   workflow_call:
 
+concurrency:
+  group: queue
+  cancel-in-progress: true
+
+permissions: read-all
+
 jobs:
   update_release_draft:
     name: ✏️ Draft release

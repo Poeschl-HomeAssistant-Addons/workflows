@@ -12,10 +12,18 @@ on:
     paths:
       - .github/labels.yaml
 
+concurrency:
+  group: queue
+  cancel-in-progress: true
+
+permissions: read-all
+
 jobs:
   labels:
     name: ♻️ Sync labels
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: ⤵️ Download latest labels definitions
         uses: enflo/curl-action@v1
