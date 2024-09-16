@@ -12,10 +12,6 @@ on:
     paths:
       - .github/labels.yaml
 
-concurrency:
-  group: queue
-  cancel-in-progress: true
-
 permissions: read-all
 
 jobs:
