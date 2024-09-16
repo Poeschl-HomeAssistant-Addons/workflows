@@ -1,0 +1,29 @@
+name: Update addon edge repository
+
+# yamllint disable-line rule:truthy
+on:
+  workflow_call:
+    inputs:
+      addon:
+        description: "The name of the addon to update"
+        required: true
+        type: string
+    secrets:
+      updater_token:
+        required: true
+
+concurrency:
+  group: queue
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish add-on update
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚀 Run Repository Updater
+        uses: hassio-addons/repository-updater@v1
+        with:
+          addon: ${{ github.events.input.addon }}
+          repository: ${{ github.repository }}
+          token: ${{ secrets.updater_token }}

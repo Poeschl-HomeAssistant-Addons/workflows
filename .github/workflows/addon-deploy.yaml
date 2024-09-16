@@ -4,7 +4,7 @@ name: Deploy addon
 on:
   workflow_call:
     secrets:
-      DISPATCH_TOKEN:
+      dispatch_token:
         required: true
 
 concurrency:
