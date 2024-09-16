@@ -3,6 +3,11 @@ name: Deploy addon
 # yamllint disable-line rule:truthy
 on:
   workflow_call:
+    inputs:
+      version:
+        description: "The version to release"
+        required: true
+        type: string
     secrets:
       dispatch_token:
         required: true
@@ -136,4 +141,38 @@ jobs:
           # Disable layer caching
           layers: false
 
-# Todo: Publish to main repository
+      - name: 🔑 GHCR Login
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ⤴️ Push images
+        id: push-image
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+
+  publish-stable:
+    name: 📢 Publish to stable repository
+    runs-on: ubuntu-latest
+    needs:
+      - build-image
+      - information
+    environment: stable
+    steps:
+      - name: 📢 Dispatch Repository Updater update signal
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DISPATCH_TOKEN }}
+          repository: Poeschl-HomeAssistant-Addons/repository
+          event-type: update
+          client-payload: >
+            {
+              "addon": "${{ needs.information.outputs.slug }}",
+              "name": "${{ needs.information.outputs.name }}",
+              "repository": "${{ github.repository }}",
+              "version": "${{ github.event.inputs.version }}"
+            }
