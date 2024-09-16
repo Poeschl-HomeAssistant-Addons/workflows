@@ -56,6 +56,9 @@ jobs:
     runs-on: ubuntu-24.04
     needs:
       - information
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix:
         architecture: ${{ fromJson(needs.information.outputs.architectures) }}
@@ -71,7 +74,7 @@ jobs:
           echo "Base image: ${from}"
           echo "from=${from}" >> "$GITHUB_OUTPUT"
 
-          if [[ "${{ matrix.architecture}}" = "amd64" ]]; then
+          if [[ "${{ matrix.architecture }}" = "amd64" ]]; then
             echo "platform=linux/amd64" >> "$GITHUB_OUTPUT"
           elif [[ "${{ matrix.architecture }}" = "i386" ]]; then
             echo "platform=linux/386" >> "$GITHUB_OUTPUT"
@@ -104,7 +107,7 @@ jobs:
         shell: bash
         run: |
           addon_image=$(yq --no-colors eval ".image" "${{ needs.information.outputs.config-file }}")
-          addon_image=${addon_image/\{arch\}/${{ ${{ matrix.architecture }} }}}
+          addon_image=${addon_image/\{arch\}/${{ matrix.architecture }}}
           echo "Addon image: ${addon_image}"
           echo "image=${addon_image}" >> "$GITHUB_OUTPUT"
 
