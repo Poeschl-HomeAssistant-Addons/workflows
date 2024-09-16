@@ -166,7 +166,7 @@ jobs:
         with:
           containerfiles: "./${{ needs.information.outputs.target }}/Dockerfile"
           context: "./${{ needs.information.outputs.target }}"
-          images: ${{ steps.image-meta.outputs.images }}
+          image: ${{ steps.image-meta.outputs.images }}
           tags: ${{ steps.image-meta.outputs.tags }}
           labels: ${{ steps.image-meta.outputs.labels }}
           platforms: ${{ steps.addon-meta.outputs.platform }}
