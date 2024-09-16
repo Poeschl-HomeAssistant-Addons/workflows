@@ -16,6 +16,8 @@ concurrency:
   group: queue
   cancel-in-progress: false
 
+permissions: read-all
+
 jobs:
   publish:
     name: Publish add-on update
@@ -24,6 +26,6 @@ jobs:
       - name: 🚀 Run Repository Updater
         uses: hassio-addons/repository-updater@v1
         with:
-          addon: ${{ github.events.input.addon }}
+          addon: ${{ github.events.inputs.addon }}
           repository: ${{ github.repository }}
           token: ${{ secrets.updater_token }}
