@@ -10,8 +10,6 @@ on:
       - synchronize
   workflow_dispatch:
 
-permissions: read-all
-
 jobs:
   lint-markdown:
     name: 🔎 MarkdownLint

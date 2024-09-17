@@ -8,8 +8,6 @@ on:
       - edited
   workflow_call:
 
-permissions: read-all
-
 jobs:
   gitmoji-pr-title:
     name: ✔️ Verify title

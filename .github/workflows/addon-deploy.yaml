@@ -16,8 +16,6 @@ concurrency:
   group: deploy
   cancel-in-progress: false
 
-permissions: read-all
-
 jobs:
   information:
     if: github.event_name == 'release'

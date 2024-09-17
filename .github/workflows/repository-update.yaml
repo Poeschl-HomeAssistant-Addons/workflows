@@ -16,12 +16,12 @@ concurrency:
   group: queue
   cancel-in-progress: false
 
-permissions: read-all
-
 jobs:
   publish:
     name: Publish add-on update
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: 🚀 Run Repository Updater
         uses: hassio-addons/repository-updater@v1
