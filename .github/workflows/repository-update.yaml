@@ -23,9 +23,22 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: 🚀 Run Repository Updater
-        uses: hassio-addons/repository-updater@v1
+      - name: 🏗️ Setup python env
+        uses: actions/setup-python@v5
         with:
-          addon: ${{ github.events.inputs.addon }}
-          repository: ${{ github.repository }}
-          token: ${{ secrets.updater_token }}
+          python-version: '3.11'
+
+      - name: 🏗️ Install repository-updater
+        run: pip install repository-updater
+
+      - name: 🏗️ Setup git user
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+      - name: 🚀 Run Repository Updater
+        run: >
+          repository-updater
+          --addon "${{ github.events.inputs.addon }}"
+          --repository "${{ github.repository }}"
+          --token "${{ secrets.updater_token }}"
