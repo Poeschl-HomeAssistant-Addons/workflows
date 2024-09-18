@@ -47,8 +47,6 @@ jobs:
       - name: ℹ️ Gather addon info
         id: information
         uses: frenck/action-addon-information@v1
-        with:
-          path: "."
 
       - name: ℹ️ Gather version and environment from GitHub
         id: release
@@ -144,8 +142,8 @@ jobs:
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
-          containerfiles: "./${{ needs.information.outputs.target }}/Dockerfile"
-          context: "./${{ needs.information.outputs.target }}"
+          containerfiles: "./${{ needs.information.outputs.addon-folder }}/Dockerfile"
+          context: "./${{ needs.information.outputs.addon-folder }}"
           image: ${{ steps.image-meta.outputs.images }}
           tags: ${{ steps.image-meta.outputs.tags }}
           labels: ${{ steps.image-meta.outputs.labels }}

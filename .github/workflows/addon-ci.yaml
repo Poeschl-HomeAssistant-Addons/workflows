@@ -29,8 +29,6 @@ jobs:
       - name: ℹ️ Gather addon info
         id: information
         uses: frenck/action-addon-information@v1
-        with:
-          path: "."
 
   lint-addon:
     name: 🔎 Home Assistant Addon Linter
@@ -45,7 +43,7 @@ jobs:
         uses: frenck/action-addon-linter@v2
         with:
           community: true
-          path: "./${{ needs.information.outputs.target }}"
+          path: "./${{ needs.information.outputs.addon-folder }}"
 
   lint-hadolint:
     name: 🔎 Hadolint
@@ -59,7 +57,7 @@ jobs:
       - name: 🚀 Run hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: "./${{ needs.information.outputs.target }}/Dockerfile"
+          dockerfile: "./${{ needs.information.outputs.addon-folder }}/Dockerfile"
 
   lint-shellcheck:
     name: 🔎 ShellCheck
@@ -161,8 +159,8 @@ jobs:
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
-          containerfiles: "./${{ needs.information.outputs.target }}/Dockerfile"
-          context: "./${{ needs.information.outputs.target }}"
+          containerfiles: "./${{ needs.information.outputs.addon-folder }}/Dockerfile"
+          context: "./${{ needs.information.outputs.addon-folder }}"
           image: ${{ steps.image-meta.outputs.images }}
           tags: ${{ steps.image-meta.outputs.tags }}
           labels: ${{ steps.image-meta.outputs.labels }}
