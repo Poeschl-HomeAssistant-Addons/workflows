@@ -8,6 +8,16 @@ on:
         description: "The version to release"
         required: true
         type: string
+      repository:
+        default: "repository"
+        description: "The name of the stable repository"
+        required: false
+        type: string
+      repository_edge:
+        default: "repository-edge"
+        description: "The name of the edge repository"
+        required: false
+        type: string
     secrets:
       dispatch_token:
         required: true
@@ -29,6 +39,7 @@ jobs:
       architectures: ${{ steps.information.outputs.architectures }}
       build-file: ${{ steps.information.outputs.build }}
       config-file: ${{ steps.information.outputs.config }}
+      environment: ${{ steps.release.outputs.environment }}
     steps:
       - name: ↩️ Checkout
         uses: actions/checkout@v4
@@ -39,14 +50,21 @@ jobs:
         with:
           path: "."
 
-      - name: ℹ️ Gather version from GitHub
+      - name: ℹ️ Gather version and environment from GitHub
         id: release
         run: |
-          version="${{ github.event.release.tag_name }}"
-          version="${version,,}"
-          version="${version#v}"
-
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          sha="${{ github.sha }}"
+          environment="edge"
+          version="${sha:0:7}"
+          if [[ "${{ github.event_name }}" = "release" ]]; then
+            version="${{ github.event.release.tag_name }}"
+            version="${version,,}"
+            version="${version#v}"
+            environment="stable"
+            if [[ "${{ github.event.release.prerelease }}" = "true" ]]; then
+              environment="beta"
+            fi
+          fi
 
   build-image:
     name: 💽 Create image ${{ matrix.architecture }}
@@ -155,19 +173,42 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
           tags: ${{ steps.build-image.outputs.tags }}
 
-  publish-stable:
-    name: 📢 Publish to stable repository
+  publish-edge:
+    name: 📢 Publish to edge repository
     runs-on: ubuntu-latest
+    if: needs.information.outputs.environment == 'edge'
     needs:
       - build-image
       - information
-    environment: stable
+    environment:
+      name: ${{ needs.information.outputs.environment }}
     steps:
       - name: 📢 Dispatch Repository Updater update signal
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.DISPATCH_TOKEN }}
-          repository: Poeschl-HomeAssistant-Addons/repository
+          repository: ${{ github.repository_owner }}/${{ inputs.repository_edge }}
+          event-type: update
+          client-payload: >
+            {
+              "addon": "${{ needs.information.outputs.slug }}"
+            }
+
+  publish-stable:
+    name: 📢 Publish to stable repository
+    runs-on: ubuntu-latest
+    if: needs.information.outputs.environment == 'stable'
+    needs:
+      - build-image
+      - information
+    environment:
+      name: ${{ needs.information.outputs.environment }}
+    steps:
+      - name: 📢 Dispatch Repository Updater update signal
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DISPATCH_TOKEN }}
+          repository: ${{ github.repository_owner }}/${{ inputs.repository }}
           event-type: update
           client-payload: >
             {
