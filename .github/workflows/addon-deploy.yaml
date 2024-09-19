@@ -63,6 +63,10 @@ jobs:
               environment="beta"
             fi
           fi
+          echo "Version: $version"
+          echo "Environment: $environment"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "environment=${environment}" >> "$GITHUB_OUTPUT"
 
   build-image:
     name: 💽 Create image ${{ matrix.architecture }}
