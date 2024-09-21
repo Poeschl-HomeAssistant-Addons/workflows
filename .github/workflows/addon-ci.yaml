@@ -179,7 +179,7 @@ jobs:
         id: image-meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ needs.information.outputs.name }}
+          images: ${{ needs.information.outputs.slug }}
           tags: "dev-${{ matrix.architecture }}"
 
       - name: 🏗️ Install qemu dependency
