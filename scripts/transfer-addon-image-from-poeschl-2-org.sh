@@ -4,14 +4,13 @@ set -e
 # Example call
 # ./transfer-addon-image-from-poeschl-2-org.sh
 # Enter the image name (without architecture and version and ha- prefex): asterisk
-# Enter the architectures (separated by spaces): i386 amd64 aarch64 armhf armv7
 # Enter the versions (separated by spaces): 1.0.0 1.1.0 1.1.1
 
 read -p "Enter the image name (without architecture and version and ha- prefix): " IMAGE_NAME
-read -p "Enter the architectures (separated by spaces): " ARCHITECTURES
 read -p "Enter the versions (separated by spaces): " VERSIONS
 
 DRY_RUN=0
+ARCHITECTURES="i386 amd64 aarch64 armhf armv7"
 
 if [[ -z "$ARCHITECTURES" || -z "$VERSIONS" ]]; then
   echo "Architectures or versions not specified."
