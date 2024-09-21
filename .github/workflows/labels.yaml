@@ -24,6 +24,9 @@ jobs:
         with:
           curl: -o labels.yaml https://raw.githubusercontent.com/Poeschl-HomeAssistant-Addons/workflows/main/.github/labels.yaml
 
+      - name: 👀 View label config
+        run: cat labels.yaml
+
       - name: 🚀 Run Label Sync
         uses: micnncim/action-label-syncer@v1.3.0
         env:
