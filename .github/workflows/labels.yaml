@@ -17,6 +17,7 @@ jobs:
     name: ♻️ Sync labels
     runs-on: ubuntu-latest
     permissions:
+      issues: write
       contents: write
     steps:
       - name: ⤵️ Download latest labels definitions
