@@ -114,8 +114,8 @@ jobs:
 
       - name: 🔎 Check for correct image
         run: |
-          if ! yq eval '.image' ${{ needs.information.outputs.config-file }} | grep -q "ghcr.io/poeschl-homeAssistant-addons"; then
-            echo "::error file=${{ needs.information.outputs.config-file }}::The add-on image does not use the correct image registry. Make sure its 'ghcr.io/poeschl-homeAssistant-addons'"
+          if ! yq eval '.image' ${{ needs.information.outputs.config-file }} | grep -q "ghcr.io/poeschl-homeassistant-addons"; then
+            echo "::error file=${{ needs.information.outputs.config-file }}::The add-on image does not use the correct image registry. Make sure its 'ghcr.io/poeschl-homeassistant-addons'"
             exit 1
           fi
       
