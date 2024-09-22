@@ -94,7 +94,7 @@ jobs:
         uses: ibiqlik/action-yamllint@v3
 
   migration-check:
-    name: ✔️ Verify Migration 
+    name: ✔️ Verify Migration
     runs-on: ubuntu-latest
     needs:
       - information
@@ -118,7 +118,7 @@ jobs:
             echo "::error file=${{ needs.information.outputs.config-file }}::The add-on image does not use the correct image registry. Make sure its 'ghcr.io/poeschl-homeassistant-addons'"
             exit 1
           fi
-      
+
       - name: 🔎 Check for correct addon url
         run: |
           if ! yq eval '.url' ${{ needs.information.outputs.config-file }} | grep -q "github.com/Poeschl-HomeAssistant-Addons"; then
