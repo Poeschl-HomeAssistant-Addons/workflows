@@ -108,21 +108,24 @@ jobs:
       - name: 🔎 Check for correct repository install url
         run: |
           if grep -q "https%3A%2F%2Fgithub.com%2FPoeschl%2FHassio-Addons" README.md; then
-            echo "::error file=README.md::The repository URL contains the old repository. Please correct the installation link to 'https%3A%2F%2Fgithub.com%2FPoeschl-HomeAssistant-Addons'."
+            echo "::error file=README.md::The repository URL contains the old repository. " \
+            "Please correct the installation link to 'https%3A%2F%2Fgithub.com%2FPoeschl-HomeAssistant-Addons'."
             exit 1
           fi
 
       - name: 🔎 Check for correct image
         run: |
           if ! yq eval '.image' ${{ needs.information.outputs.config-file }} | grep -q "ghcr.io/poeschl-homeassistant-addons"; then
-            echo "::error file=${{ needs.information.outputs.config-file }}::The add-on image does not use the correct image registry. Make sure its 'ghcr.io/poeschl-homeassistant-addons'"
+            echo "::error file=${{ needs.information.outputs.config-file }}::The add-on image does not use the correct image registry. " \
+            "Make sure its 'ghcr.io/poeschl-homeassistant-addons'"
             exit 1
           fi
 
       - name: 🔎 Check for correct addon url
         run: |
           if ! yq eval '.url' ${{ needs.information.outputs.config-file }} | grep -q "github.com/Poeschl-HomeAssistant-Addons"; then
-            echo "::error file=${{ needs.information.outputs.config-file }}::The add-on url does not use point to the correct repository. Make sure its https://github.com/Poeschl-HomeAssistant-Addons'"
+            echo "::error file=${{ needs.information.outputs.config-file }}::The add-on url does not use point to the correct repository. " \
+            "Make sure its https://github.com/Poeschl-HomeAssistant-Addons'"
             exit 1
           fi
 
