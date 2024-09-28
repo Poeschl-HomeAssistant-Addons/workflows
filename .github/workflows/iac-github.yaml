@@ -1,0 +1,57 @@
+name: GitHub IaC
+
+# yamllint disable-line rule:truthy
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Should the plan also be applied?
+        type: boolean
+        required: true
+        default: false
+  workflow_call:
+  push:
+    branches:
+      - main
+    paths:
+      - github-iac
+
+jobs:
+  labels:
+    name: 🏗️ Setup github repository structure
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.6"
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_CLOUD_TOKEN }}
+
+      - name: ⤵️ Download latest addons.yml file from stable repository
+        uses: enflo/curl-action@v1
+        with:
+          curl: -o addons.yml https://raw.githubusercontent.com/Poeschl-HomeAssistant-Addons/repository/refs/heads/main/.addons.yml
+
+      - name: 👀 View addons config
+        run: cat addons.yml
+
+      - name: 📝 Terraform plan
+        id: plan
+        env:
+          GITHUB_TOKEN: ${{ secrets.IAC_TOKEN }}
+        run: terraform plan
+
+      - name: 🔊 Print plan as summary
+        run: echo "```${process.env.PLAN}```" > $GITHUB_STEP_SUMMARY
+
+      - name: 🚀 Apply plan
+        if: github.event.name == 'workflow_dispatch' && github.event.inputs.apply == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.IAC_TOKEN }}
+        run: terraform apply -auto-approve
+
