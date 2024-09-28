@@ -47,7 +47,7 @@ jobs:
         id: plan
         env:
           GITHUB_TOKEN: ${{ secrets.IAC_TOKEN }}
-        run: cd github-iac && terraform plan
+        run: cd github-iac && terraform plan -out plan.out
 
       - name: ⤴️ Upload plan
         uses: actions/upload-artifact@v4
