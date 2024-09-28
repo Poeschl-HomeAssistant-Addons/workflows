@@ -1,6 +1,6 @@
 # Setup addon repositories
 
-## FAQ:
+## FAQ
 
 ### Import an existing repository
 
