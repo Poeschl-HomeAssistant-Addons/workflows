@@ -9,7 +9,9 @@ on:
         type: boolean
         required: true
         default: false
-  workflow_call:
+  repository_dispatch:
+    types:
+      - addons-update
   push:
     branches:
       - main
