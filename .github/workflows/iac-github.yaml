@@ -77,6 +77,11 @@ jobs:
           name: github-iac-artifact
           path: github-iac
 
+      - name: ⤵️ Download latest addons.yml file from stable repository
+        uses: enflo/curl-action@v1
+        with:
+          curl: -o addons.yml https://raw.githubusercontent.com/Poeschl-HomeAssistant-Addons/repository/refs/heads/main/.addons.yml
+
       - name: 🏗️ Terraform init
         env:
           GITHUB_TOKEN: ${{ secrets.IAC_TOKEN }}
