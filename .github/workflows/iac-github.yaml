@@ -17,12 +17,43 @@ on:
       - github-iac
 
 jobs:
-  labels:
-    name: 🏗️ Setup github repository structure
+  plan:
+    name: 📝 Plan IaC changes
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.apply == 'false'
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      contents: write
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Setup terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.6"
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_CLOUD_TOKEN }}
+
+      - name: ⤵️ Download latest addons.yml file from stable repository
+        uses: enflo/curl-action@v1
+        with:
+          curl: -o addons.yml https://raw.githubusercontent.com/Poeschl-HomeAssistant-Addons/repository/refs/heads/main/.addons.yml
+
+      - name: 👀 View addons config
+        run: cat addons.yml
+
+      - name: 🏗️ Terraform init
+        env:
+          GITHUB_TOKEN: ${{ secrets.IAC_TOKEN }}
+        run: cd github-iac && terraform init
+
+      - name: 📝 Terraform plan
+        id: plan
+        env:
+          GITHUB_TOKEN: ${{ secrets.IAC_TOKEN }}
+        run: cd github-iac && terraform plan
+
+  apply:
+    name: 🚀 Apply IaC changes
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.apply == 'true'
     steps:
       - name: ↩️ Checkout
         uses: actions/checkout@v4
@@ -53,8 +84,6 @@ jobs:
         run: cd github-iac && terraform plan
 
       - name: 🚀 Apply plan
-        if: github.event.name == 'workflow_dispatch' && github.event.inputs.apply == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.IAC_TOKEN }}
         run: cd github-iac && terraform apply -auto-approve
-
