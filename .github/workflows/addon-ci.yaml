@@ -113,11 +113,10 @@ jobs:
             exit 1
           fi
 
-      - name: 🔎 Check for correct image
+      - name: 🔎 Check for existing image attribute
         run: |
-          if ! yq eval '.image' ${{ needs.information.outputs.config-file }} | grep -q "ghcr.io/poeschl-homeassistant-addons"; then
-            echo "::error file=${{ needs.information.outputs.config-file }}::The add-on image does not use the correct image registry. " \
-            "Make sure its 'ghcr.io/poeschl-homeassistant-addons'"
+          if yq eval 'has(.image)' ${{ needs.information.outputs.config-file }} | grep -q true; then
+            echo "::error file=${{ needs.information.outputs.config-file }}::The 'image' attribute should not exist in the config file in the addon repository."
             exit 1
           fi
 
