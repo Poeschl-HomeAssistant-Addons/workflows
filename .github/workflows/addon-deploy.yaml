@@ -130,10 +130,14 @@ jobs:
         run: |
           addon_image=$(yq --no-colors ".addons.${{ needs.information.outputs.slug }}.image" "addons.yaml")
           addon_image=${addon_image/\{arch\}/${{ matrix.architecture }}}
+
+          if [ -z "$addon_image" ] || [ "$addon_image" = "null" ]; then
+            echo "::error::Addon image name is empty or 'null'."
+            exit 1
+          fi
+
           echo "Addon image: ${addon_image}"
           echo "image=${addon_image}" >> "$GITHUB_OUTPUT"
-          # Break, if the detected images is invalid
-          [ -z "$addon_image" ] || [ "$addon_image" = "null" ] && exit 1
 
       - name: ℹ️ Generate OCI meta info
         id: image-meta
