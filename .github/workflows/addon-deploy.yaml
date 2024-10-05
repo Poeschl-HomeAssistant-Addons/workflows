@@ -119,14 +119,21 @@ jobs:
           echo "Addon labels: $labels"
           echo "labels=${labels}" >> "$GITHUB_OUTPUT"
 
+      - name: ⤵️ Download addons metadata
+        uses: enflo/curl-action@v1
+        with:
+          curl: -o addons.yaml https://raw.githubusercontent.com/Poeschl-HomeAssistant-Addons/repository/refs/heads/main/.addons.yml
+
       - name: ℹ️ Determine addon image name
         id: addon-image
         shell: bash
         run: |
-          addon_image=$(yq --no-colors eval ".image" "${{ needs.information.outputs.config-file }}")
+          addon_image=$(yq --no-colors ".addons.${{ needs.information.outputs.slug }}.image" "addons.yaml")
           addon_image=${addon_image/\{arch\}/${{ matrix.architecture }}}
           echo "Addon image: ${addon_image}"
           echo "image=${addon_image}" >> "$GITHUB_OUTPUT"
+          # Break, if the detected images is invalid
+          [ -z "$addon_image" ] || [ "$addon_image" = "null" ] && exit 1
 
       - name: ℹ️ Generate OCI meta info
         id: image-meta
