@@ -73,7 +73,7 @@ jobs:
               elif [[ "$arch" = "aarch64" ]]; then
                 architectures+=("aarch64")
               fi
-              
+
             else
               echo "::error ::Could not determine os of build images"
               exit 1
