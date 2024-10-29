@@ -28,7 +28,7 @@ jobs:
         id: os-info
         shell: bash
         run: |
-          first_build_image=$(yq e '.build_from | to_entries | .[0].value' ${{ steps.information.outputs.build-file }})
+          first_build_image=$(yq e '.build_from | to_entries | .[0].value' ${{ steps.information.outputs.build }})
 
           echo "build image for detection: $first_build_image"
 
@@ -42,43 +42,49 @@ jobs:
           echo "os version: $version_tag"
           echo "version=${version_tag}" >> "$GITHUB_OUTPUT"
 
-          architectures=()
+          addon_arch_list=$(echo '${{ steps.information.outputs.architectures }}' | jq -c '.[]')
+          list_of_architectures=""
+          for arch in $addon_arch_list; do
+            trim_arch=$(echo "$arch" | tr -d '"')
+            detected_arch=""
 
-          for arch in "${{ fromJson(steps.information.outputs.architectures) }}"; do
             if [[ "$is_alpine_image" = "true" ]]; then
-              if [[ "$arch" = "amd64" ]]; then
-                architectures+=("x86_64")
-              elif [[ "$arch" = "i386" ]]; then
-                architectures+=("x86")
-              elif [[ "$arch" = "armhf" ]]; then
-                architectures+=("armhf")
-              elif [[ "$arch" = "armv7" ]]; then
-                architectures+=("armv7")
-              elif [[ "$arch" = "aarch64" ]]; then
-                architectures+=("aarch64")
+              if [[ "$trim_arch" = "amd64" ]]; then
+                detected_arch="x86_64"
+              elif [[ "$trim_arch" = "i386" ]]; then
+                detected_arch="x86"
+              elif [[ "$trim_arch" = "armhf" ]]; then
+                detected_arch="armhf"
+              elif [[ "$trim_arch" = "armv7" ]]; then
+                detected_arch="armv7"
+              elif [[ "$trim_arch" = "aarch64" ]]; then
+                detected_arch="aarch64"
               fi
 
             elif [[ "$is_debian_image" = "true" ]]; then
-              if [[ "$arch" = "amd64" ]]; then
-                architectures+=("amd64")
-              elif [[ "$arch" = "i386" ]]; then
-                architectures+=("i386")
-              elif [[ "$arch" = "armhf" ]]; then
-                architectures+=("armhf")
-              elif [[ "$arch" = "armv7" ]]; then
-                architectures+=("arm64")
-              elif [[ "$arch" = "aarch64" ]]; then
-                architectures+=("aarch64")
+              if [[ "$trim_arch" = "amd64" ]]; then
+                detected_arch="amd64"
+              elif [[ "$trim_arch" = "i386" ]]; then
+                detected_arch="i386"
+              elif [[ "$trim_arch" = "armhf" ]]; then
+                detected_arch="armhf"
+              elif [[ "$trim_arch" = "armv7" ]]; then
+                detected_arch="arm64"
+              elif [[ "$trim_arch" = "aarch64" ]]; then
+                detected_arch="aarch64"
               fi
 
             else
               echo "::error ::Could not determine os of build images"
               exit 1
             fi
+
+            echo "'$trim_arch' -> '$detected_arch'"
+            list_of_architectures="${list_of_architectures}${list_of_architectures:+,}${detected_arch}"
           done
 
-          echo "os architectures: ${architectures[*]}"
-          echo "architectures=${architectures[*]}" >> "$GITHUB_OUTPUT"
+          echo "os architectures: $list_of_architectures"
+          echo "architectures=${list_of_architectures}" >> "$GITHUB_OUTPUT"
 
   check-for-updates:
     name: Check for updates
@@ -106,4 +112,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           containerFile: ${{ needs.information.outputs.addon-folder }}/Dockerfile
           osVersion: ${{ needs.information.outputs.os-version }}
-          architectures: $ {{ needs.information.outputs.os-architectures }}
+          architectures: ${{ needs.information.outputs.os-architectures }}
