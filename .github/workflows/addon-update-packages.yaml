@@ -3,9 +3,6 @@ name: Run Package updates
 # yamllint disable-line rule:truthy
 on:
   workflow_call:
-    secrets:
-      token:
-        required: true
 
 concurrency:
   group: update-packages
@@ -100,13 +97,13 @@ jobs:
       - name: 🔧 Set git bot user
         shell: bash
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.name 'Poeschl Home Assistant Addon-Botter'
+          git config user.email 'Addon-Botter@users.noreply.github.com'
 
       - name: 🚀 Run Updater
         uses: Poeschl/container-package-updater@v3
         with:
-          token: ${{ secrets.TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           containerFile: ${{ needs.information.outputs.addon-folder }}/Dockerfile
           osVersion: ${{ needs.information.outputs.os-version }}
           architectures: $ {{ needs.information.outputs.os-architectures }}
