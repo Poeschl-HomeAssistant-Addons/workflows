@@ -1,0 +1,115 @@
+name: Run Package updates
+
+# yamllint disable-line rule:truthy
+on:
+  workflow_call:
+
+concurrency:
+  group: update-packages
+  cancel-in-progress: false
+
+jobs:
+  information:
+    name: ℹ️ Gather add-on information
+    runs-on: ubuntu-latest
+    outputs:
+      addon-folder: ${{ steps.information.outputs.target }}
+      os-architectures: ${{ steps.os-info.outputs.architectures }}
+      os-version: ${{ steps.os-info.outputs.version }}
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+
+      - name: ℹ️ Gather addon info
+        id: information
+        uses: frenck/action-addon-information@v1
+
+      - name: ℹ️ Determine OS information
+        id: os-info
+        shell: bash
+        run: |
+          first_build_image=$(yq e '.build_from | to_entries | .[0].value' ${{ steps.information.outputs.build }})
+
+          echo "build image for detection: $first_build_image"
+
+          is_alpine_image=$(echo $first_build_image | grep -q '/.*-base:' && echo "true" || echo "false")
+          is_debian_image=$(echo $first_build_image | grep -q '/.*-base-debian:' && echo "true" || echo "false")
+
+          echo "alpine: $is_alpine_image | debian: $is_debian_image"
+
+          version_tag=$(echo $first_build_image | awk -F':' '{print $2}')
+
+          echo "os version: $version_tag"
+          echo "version=${version_tag}" >> "$GITHUB_OUTPUT"
+
+          addon_arch_list=$(echo '${{ steps.information.outputs.architectures }}' | jq -c '.[]')
+          list_of_architectures=""
+          for arch in $addon_arch_list; do
+            trim_arch=$(echo "$arch" | tr -d '"')
+            detected_arch=""
+
+            if [[ "$is_alpine_image" = "true" ]]; then
+              if [[ "$trim_arch" = "amd64" ]]; then
+                detected_arch="x86_64"
+              elif [[ "$trim_arch" = "i386" ]]; then
+                detected_arch="x86"
+              elif [[ "$trim_arch" = "armhf" ]]; then
+                detected_arch="armhf"
+              elif [[ "$trim_arch" = "armv7" ]]; then
+                detected_arch="armv7"
+              elif [[ "$trim_arch" = "aarch64" ]]; then
+                detected_arch="aarch64"
+              fi
+
+            elif [[ "$is_debian_image" = "true" ]]; then
+              if [[ "$trim_arch" = "amd64" ]]; then
+                detected_arch="amd64"
+              elif [[ "$trim_arch" = "i386" ]]; then
+                detected_arch="i386"
+              elif [[ "$trim_arch" = "armhf" ]]; then
+                detected_arch="armhf"
+              elif [[ "$trim_arch" = "armv7" ]]; then
+                detected_arch="arm64"
+              elif [[ "$trim_arch" = "aarch64" ]]; then
+                detected_arch="aarch64"
+              fi
+
+            else
+              echo "::error ::Could not determine os of build images"
+              exit 1
+            fi
+
+            echo "'$trim_arch' -> '$detected_arch'"
+            list_of_architectures="${list_of_architectures}${list_of_architectures:+,}${detected_arch}"
+          done
+
+          echo "os architectures: $list_of_architectures"
+          echo "architectures=${list_of_architectures}" >> "$GITHUB_OUTPUT"
+
+  check-for-updates:
+    name: Check for updates
+    runs-on: ubuntu-latest
+    needs:
+      - information
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Set git bot user
+        shell: bash
+        run: |
+          git config user.name 'Poeschl Home Assistant Addon-Botter'
+          git config user.email 'Addon-Botter@users.noreply.github.com'
+
+      - name: 🚀 Run Updater
+        uses: Poeschl/container-package-updater@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          containerFile: ${{ needs.information.outputs.addon-folder }}/Dockerfile
+          osVersion: ${{ needs.information.outputs.os-version }}
+          architectures: ${{ needs.information.outputs.os-architectures }}
