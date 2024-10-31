@@ -107,7 +107,7 @@ jobs:
           git config user.email 'Addon-Botter@users.noreply.github.com'
 
       - name: 🚀 Run Updater
-        uses: Poeschl/container-package-updater@v3
+        uses: Poeschl/container-package-updater@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           containerFile: ${{ needs.information.outputs.addon-folder }}/Dockerfile
