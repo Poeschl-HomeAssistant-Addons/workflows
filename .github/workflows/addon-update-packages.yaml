@@ -69,9 +69,9 @@ jobs:
               elif [[ "$trim_arch" = "armhf" ]]; then
                 detected_arch="armhf"
               elif [[ "$trim_arch" = "armv7" ]]; then
-                detected_arch="arm64"
+                detected_arch="armhf"
               elif [[ "$trim_arch" = "aarch64" ]]; then
-                detected_arch="aarch64"
+                detected_arch="arm64"
               fi
 
             else
