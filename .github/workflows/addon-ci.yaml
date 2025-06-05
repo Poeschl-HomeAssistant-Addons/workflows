@@ -179,7 +179,7 @@ jobs:
         run: podman push ${{ steps.build-image.outputs.image-with-tag }} docker-daemon:${{ steps.build-image.outputs.image-with-tag }}
 
       - name: 🚀 Execute dive
-        uses: MaxymVlasov/dive-action@v1.4.0
+        uses: MaxymVlasov/dive-action@v1.5.0
         with:
           image: "${{ steps.build-image.outputs.image-with-tag }}"
           config-file: ${{ github.workspace }}/.dive-ci.yaml
