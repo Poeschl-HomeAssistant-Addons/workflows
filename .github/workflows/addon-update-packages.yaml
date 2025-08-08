@@ -106,10 +106,20 @@ jobs:
           git config user.name 'Poeschl Home Assistant Addon-Botter'
           git config user.email 'Addon-Botter@users.noreply.github.com'
 
+      - name: 🚧 Debug token presence
+        shell: bash
+        run: |
+          if [ -n "${{ secrets.UPDATER_TOKEN }}" ]; then
+            echo "updater_token is set and not empty"
+            echo "First 4 characters of updater_token: ${${{ secrets.UPDATER_TOKEN }}:0:4}"
+          else
+            echo "updater_token is either not set or empty, will use github.token as fallback"
+          fi
+
       - name: 🚀 Run Updater
         uses: Poeschl/container-package-updater@v4
         with:
-          # Use the UPDATER_TOKEN instead of GITHUB_TOKEN to tirgger PR workflows
+          # Using GITHUB_TOKEN as fallback
           token: ${{ secrets.UPDATER_TOKEN }}
           containerFile: ${{ needs.information.outputs.addon-folder }}/Dockerfile
           osVersion: ${{ needs.information.outputs.os-version }}
