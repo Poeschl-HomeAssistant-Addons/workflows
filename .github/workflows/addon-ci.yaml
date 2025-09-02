@@ -24,7 +24,7 @@ jobs:
       config-file: ${{ steps.information.outputs.config }}
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: ℹ️ Gather addon info
         id: information
@@ -37,7 +37,7 @@ jobs:
       - information
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 🚀 Run Home Assistant Add-on Lint
         uses: frenck/action-addon-linter@v2
@@ -52,7 +52,7 @@ jobs:
       - information
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 🚀 Run hadolint
         uses: hadolint/hadolint-action@v3.1.0
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 🚀 Run ShellCheck
         uses: ludeeus/action-shellcheck@2.0.0
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 🚀 Run markdownlint
         uses: nosborn/github-action-markdown-cli@v3.5.0
@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 🚀 Run yamllint
         uses: ibiqlik/action-yamllint@v3
@@ -104,7 +104,7 @@ jobs:
       fail-fast: false
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: ℹ️ Generate addon meta info
         id: addon-meta

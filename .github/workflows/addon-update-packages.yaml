@@ -18,7 +18,7 @@ jobs:
       os-version: ${{ steps.os-info.outputs.version }}
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: ℹ️ Gather addon info
         id: information
@@ -96,7 +96,7 @@ jobs:
       pull-requests: write
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
