@@ -42,7 +42,7 @@ jobs:
       environment: ${{ steps.release.outputs.environment }}
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: ℹ️ Gather addon info
         id: information
@@ -81,7 +81,7 @@ jobs:
         architecture: ${{ fromJson(needs.information.outputs.architectures) }}
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: ℹ️ Generate addon meta info
         id: addon-meta
