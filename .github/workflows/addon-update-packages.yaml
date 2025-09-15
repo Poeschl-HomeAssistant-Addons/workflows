@@ -3,6 +3,9 @@ name: Run Package updates
 # yamllint disable-line rule:truthy
 on:
   workflow_call:
+    secrets:
+      updater_token:
+        required: true
 
 concurrency:
   group: update-packages
