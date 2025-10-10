@@ -17,6 +17,6 @@ jobs:
       pull-requests: write
     steps:
       - name: 🏷️ Enforce gitmoji PR title
-        uses: georgepstaylor/gitmoji-pr-title-enforcer@v0.0.3
+        uses: georgepstaylor/gitmoji-pr-title-enforcer@v0.1.0
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
