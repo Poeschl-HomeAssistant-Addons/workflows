@@ -52,7 +52,7 @@ jobs:
         run: cd github-iac && terraform plan -out plan.out
 
       - name: ⤴️ Upload plan
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: github-iac-artifact
           path: github-iac/plan.out
@@ -74,7 +74,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TERRAFORM_CLOUD_TOKEN }}
 
       - name: ⤵️ Get plan artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: github-iac-artifact
           path: github-iac
