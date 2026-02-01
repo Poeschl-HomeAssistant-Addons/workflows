@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🏗️ Setup terraform
         uses: hashicorp/setup-terraform@v3
@@ -52,7 +52,7 @@ jobs:
         run: cd github-iac && terraform plan -out plan.out
 
       - name: ⤴️ Upload plan
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: github-iac-artifact
           path: github-iac/plan.out
@@ -65,7 +65,7 @@ jobs:
       - plan
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🏗️ Setup terraform
         uses: hashicorp/setup-terraform@v3
@@ -74,7 +74,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TERRAFORM_CLOUD_TOKEN }}
 
       - name: ⤵️ Get plan artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: github-iac-artifact
           path: github-iac
