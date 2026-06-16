@@ -42,7 +42,7 @@ jobs:
       environment: ${{ steps.release.outputs.environment }}
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: ℹ️ Gather addon info
         id: information
@@ -81,7 +81,7 @@ jobs:
         architecture: ${{ fromJson(needs.information.outputs.architectures) }}
     steps:
       - name: ↩️ Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: ℹ️ Generate addon meta info
         id: addon-meta
@@ -139,7 +139,7 @@ jobs:
 
       - name: ℹ️ Generate OCI meta info
         id: image-meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ steps.addon-image.outputs.image }}
           tags: "${{ needs.information.outputs.version }}"
