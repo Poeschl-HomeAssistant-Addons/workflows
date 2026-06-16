@@ -143,7 +143,7 @@ jobs:
           from=$(yq --no-colors eval ".build_from.${{ matrix.architecture }}" "${{ needs.information.outputs.build-file }}")
           echo "Base image: ${from}"
           echo "from=${from}" >> "$GITHUB_OUTPUT"
-          
+
           if [[ "${from}" == "${{ matrix.architecture }}"* ]]; then
             echo "::warning ::Base image '${from}' is still using architecture-prefixed images, consider updating to the available multi-arch images."
           fi
