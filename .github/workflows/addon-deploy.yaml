@@ -91,16 +91,14 @@ jobs:
           echo "Base image: ${from}"
           echo "from=${from}" >> "$GITHUB_OUTPUT"
 
-          if [[ "${{ matrix.architecture }}" = "amd64" ]]; then
+          if [[ "${from}" == "${{ matrix.architecture }}"* ]]; then
+            echo "::warning ::Base image '${from}' is still using architecture-prefixed images, consider updating to the available multi-arch images."
+          fi
+
+          if [[ "${{ matrix.architecture}}" = "amd64" ]]; then
             echo "platform=linux/amd64" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ matrix.architecture }}" = "i386" ]]; then
-            echo "platform=linux/386" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ matrix.architecture }}" = "armhf" ]]; then
-            echo "platform=linux/arm/v6" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ matrix.architecture }}" = "armv7" ]]; then
-            echo "platform=linux/arm/v7" >> "$GITHUB_OUTPUT"
           elif [[ "${{ matrix.architecture }}" = "aarch64" ]]; then
-            echo "platform=linux/arm64/v8" >> "$GITHUB_OUTPUT"
+            echo "platform=linux/arm64" >> "$GITHUB_OUTPUT"
           else
             echo "::error ::Could not determine platform for architecture ${{ matrix.architecture }}"
             exit 1
@@ -151,7 +149,7 @@ jobs:
         run: sudo podman run --rm --privileged docker.io/multiarch/qemu-user-static --reset -p yes
 
       - name: 🏗️ Pull base image
-        run: podman pull ${{ steps.addon-meta.outputs.from }}
+        run: podman pull ${{ steps.addon-meta.outputs.from }} --platform ${{ steps.addon-meta.outputs.platform }}
 
       - name: 🚀 Build Image
         id: build-image
