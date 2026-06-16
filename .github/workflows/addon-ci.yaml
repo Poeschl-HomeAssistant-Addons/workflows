@@ -93,6 +93,36 @@ jobs:
       - name: 🚀 Run yamllint
         uses: ibiqlik/action-yamllint@v3
 
+  support-only-supported-plattforms:
+    name: 🔎 Verify officially supported platforms
+    runs-on: ubuntu-latest
+    needs:
+      - information
+    steps:
+      - name: ↩️ Checkout
+        uses: actions/checkout@v5
+
+      - name: ✅ Verify supported platforms
+        id: verify-platforms
+        shell: bash
+        env:
+          SUPPORTED_PLATFORMS: "amd64,aarch64"
+        run: |
+          platforms=$(yq --no-colors eval ".build_from | keys" "${{ needs.information.outputs.build-file }}" | sed 's/- //g' | paste -sd "," -)
+          echo "Declared platforms: ${platforms}"
+          echo "Supported platforms: ${SUPPORTED_PLATFORMS}"
+          unsupported=()
+          for platform in ${platforms//,/ }; do
+            if [[ ! "${SUPPORTED_PLATFORMS}" =~ (^|,)"${platform}"(,|$) ]]; then
+              unsupported+=("${platform}")
+            fi
+          done
+          if [[ ${#unsupported[@]} -gt 0 ]]; then
+            echo "::error ::The following platforms are not supported anymore: ${unsupported[*]} (supported: ${SUPPORTED_PLATFORMS})"
+            echo "::error ::For information about it see https://github.com/home-assistant/docker-base#supported-architectures"
+            exit 1
+          fi
+
   test-image-build:
     name: ✔️ Verify image build ${{ matrix.architecture }}
     runs-on: ubuntu-24.04
@@ -113,15 +143,13 @@ jobs:
           from=$(yq --no-colors eval ".build_from.${{ matrix.architecture }}" "${{ needs.information.outputs.build-file }}")
           echo "Base image: ${from}"
           echo "from=${from}" >> "$GITHUB_OUTPUT"
+          
+          if [[ "${from}" == "${{ matrix.architecture }}"* ]]; then
+            echo "::warning ::Base image '${from}' is still using architecture-prefixed images, consider updating to the available multi-arch images."
+          fi
 
           if [[ "${{ matrix.architecture}}" = "amd64" ]]; then
             echo "platform=linux/amd64" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ matrix.architecture }}" = "i386" ]]; then
-            echo "platform=linux/386" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ matrix.architecture }}" = "armhf" ]]; then
-            echo "platform=linux/arm/v6" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ matrix.architecture }}" = "armv7" ]]; then
-            echo "platform=linux/arm/v7" >> "$GITHUB_OUTPUT"
           elif [[ "${{ matrix.architecture }}" = "aarch64" ]]; then
             echo "platform=linux/arm64" >> "$GITHUB_OUTPUT"
           else
