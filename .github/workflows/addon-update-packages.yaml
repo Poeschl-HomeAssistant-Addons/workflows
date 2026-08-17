@@ -35,8 +35,8 @@ jobs:
 
           echo "build image for detection: $first_build_image"
 
-          is_alpine_image=$(echo $first_build_image | grep -q '/.*-base:' && echo "true" || echo "false")
-          is_debian_image=$(echo $first_build_image | grep -q '/.*-base-debian:' && echo "true" || echo "false")
+          is_alpine_image=$(echo $first_build_image | grep -qE '/(.+-)?base:' && echo "true" || echo "false")
+          is_debian_image=$(echo $first_build_image | grep -qE '/(.+-)?base-debian:' && echo "true" || echo "false")
 
           echo "alpine: $is_alpine_image | debian: $is_debian_image"
 
@@ -54,12 +54,6 @@ jobs:
             if [[ "$is_alpine_image" = "true" ]]; then
               if [[ "$trim_arch" = "amd64" ]]; then
                 detected_arch="x86_64"
-              elif [[ "$trim_arch" = "i386" ]]; then
-                detected_arch="x86"
-              elif [[ "$trim_arch" = "armhf" ]]; then
-                detected_arch="armhf"
-              elif [[ "$trim_arch" = "armv7" ]]; then
-                detected_arch="armv7"
               elif [[ "$trim_arch" = "aarch64" ]]; then
                 detected_arch="aarch64"
               fi
@@ -67,12 +61,6 @@ jobs:
             elif [[ "$is_debian_image" = "true" ]]; then
               if [[ "$trim_arch" = "amd64" ]]; then
                 detected_arch="amd64"
-              elif [[ "$trim_arch" = "i386" ]]; then
-                detected_arch="i386"
-              elif [[ "$trim_arch" = "armhf" ]]; then
-                detected_arch="armhf"
-              elif [[ "$trim_arch" = "armv7" ]]; then
-                detected_arch="armhf"
               elif [[ "$trim_arch" = "aarch64" ]]; then
                 detected_arch="arm64"
               fi

@@ -2,7 +2,7 @@ terraform {
   required_providers {
     github = {
       source  = "integrations/github"
-      version = "6.3.0"
+      version = "6.13.0"
     }
   }
   # The terraform state is stored in the Terraform Cloud
@@ -41,6 +41,32 @@ resource "github_repository" "addons" {
   allow_squash_merge     = false
 
   lifecycle {
-    ignore_changes = [description, has_downloads]
+    ignore_changes = [description]
+  }
+}
+
+resource "github_repository_ruleset" "addons_pr_required" {
+  for_each = local.addons_data["addons"]
+
+  name        = "PR required"
+  repository  = github_repository.addons[each.key].name
+  target      = "branch"
+  enforcement = "active"
+
+  conditions {
+    ref_name {
+      include = ["~DEFAULT_BRANCH"]
+      exclude = []
+    }
+  }
+
+  rules {
+    deletion         = true
+    non_fast_forward = true
+
+    pull_request {
+      required_approving_review_count = 0
+      allowed_merge_methods = ["merge", "squash"]
+    }
   }
 }
